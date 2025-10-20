@@ -22,6 +22,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   double _minZoom = 1.0;
   double _maxZoom = 4.0;
 
+  double _baseZoom = 1.0;
+
   @override
   void initState() {
     super.initState();
@@ -56,6 +58,14 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     }
   }
 
+  Future<void> _setZoom(double value) async {
+    if (_controller == null) return;
+    final clamped = value.clamp(_minZoom, _maxZoom);
+    if ((clamped - _currentZoom).abs() < 0.01) return;
+    setState(() => _currentZoom = clamped);
+    await _controller!.setZoomLevel(_currentZoom);
+  }
+
   void _startRecording() async {
     if (!_controller!.value.isInitialized) return;
 
@@ -80,14 +90,15 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       final file = await _controller!.stopVideoRecording();
 
       final minZoom = await _controller!.getMinZoomLevel();
-      await _controller!.setZoomLevel(minZoom);
+      //await _controller!.setZoomLevel(minZoom);
+      await _setZoom(minZoom);
 
       // Navigator.pop(context, file.path);
       
       setState(() {
         currentDuration = 0;
         isRecording = false;
-        _currentZoom = minZoom;
+        //_currentZoom = minZoom;
       });
 
 
@@ -119,7 +130,21 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          Center(child: CameraPreview(_controller!)),
+          Center(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onScaleStart: isRecording
+                ? (_)=> _baseZoom = _currentZoom
+                : null,
+              onScaleUpdate: isRecording
+                ? (details){
+                  if(details.pointerCount <2) return;
+                    _setZoom(_baseZoom*details.scale);
+                }
+                : null,
+                child: CameraPreview(_controller!)
+              ),
+            ),
 
           if( isRecording ) ... [
             Positioned(
@@ -216,11 +241,12 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                 child: CenteredSlider(
                   min: _minZoom,
                   max: _maxZoom,
-                  initialValue: _currentZoom,
-                  onChanged: (value) {
-                    setState(() { _currentZoom = value; });
-                    _controller?.setZoomLevel(_currentZoom);
-                  },
+                  value: _currentZoom,
+                  onChanged: _setZoom,
+                  // onChanged: (value) {
+                  //   setState(() { _currentZoom = value; });
+                  //   _controller?.setZoomLevel(_currentZoom);
+                  // },
                 ),
               ),
             ),
@@ -237,14 +263,17 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 class CenteredSlider extends StatefulWidget {
   final double min;
   final double max;
-  final double initialValue;
-  final ValueChanged<double>? onChanged;
+  //final double initialValue;
+  final double value;
+  final ValueChanged<double> onChanged;
 
   const CenteredSlider({super.key, 
     this.min = 0,
     this.max = 10,
-    this.initialValue = 0,
-    this.onChanged,
+    //this.initialValue = 0,
+    required this.value,
+    required this.onChanged,
+    //this.onChanged,
   });
 
   @override
@@ -252,15 +281,15 @@ class CenteredSlider extends StatefulWidget {
 }
 
 class _CenteredSliderState extends State<CenteredSlider> {
-  late double _currentValue;
+  //late double _currentValue;
 
 
-  @override
-  void initState() {
-    super.initState();
-    _currentValue = widget.initialValue;
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _currentValue = widget.initialValue;
 
-  }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -270,7 +299,7 @@ class _CenteredSliderState extends State<CenteredSlider> {
       children: [
         // Valor actual
         Text(
-          _currentValue.toStringAsFixed(1),
+          widget.value.toStringAsFixed(1),
           style: const TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -301,14 +330,15 @@ class _CenteredSliderState extends State<CenteredSlider> {
                   valueIndicatorColor: Colors.black,
                 ),
                 child: Slider(
-                  value: _currentValue,
+                  value: widget.value,
                   min: widget.min,
                   max: widget.max,
+                  onChanged: widget.onChanged,
                   // divisions: ((widget.max - widget.min) * 2).round(),
-                 onChanged: (value) {
-                    setState(() => _currentValue = value); 
-                    widget.onChanged?.call(value);
-                  },
+                //  onChanged: (value) {
+                //     setState(() => _currentValue = value); 
+                //     widget.onChanged?.call(value);
+                //   },
                 ),
               ),
 
