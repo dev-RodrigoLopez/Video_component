@@ -1,0 +1,1 @@
+ /Users/mac/Documents/Repositorios\ /video_component/.dart_tool/flutter_build/7c8a3589bee0e1f6307c17ca4e7f29e9/native_assets.yaml: 
