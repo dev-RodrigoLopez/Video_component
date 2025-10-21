@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:camera/camera.dart';
+import 'package:device_orientation/device_orientation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'video_preview_screen.dart';
@@ -24,11 +26,36 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
   double _baseZoom = 1.0;
 
+  late StreamSubscription<DeviceOrientation> _changeDeviceOrientation;
+  bool _isOrientationListenerInitialized = false;
+  DeviceOrientation currentOrientation = DeviceOrientation.portraitUp;
+
   @override
   void initState() {
     super.initState();
+
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+
     _initializeCamera();
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isOrientationListenerInitialized) {
+      _isOrientationListenerInitialized = true;
+      _changeDeviceOrientation = deviceOrientation$.listen((orientation) async {
+        setState(() {
+          print('---- $orientation');
+          currentOrientation = orientation;
+        });
+        // Aquí puedes guardar la orientación si necesitas
+      });
+    }
+  }
+
 
   Future<void> _initializeCamera() async {
     if (await Permission.camera.request().isGranted &&
@@ -147,19 +174,37 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
               ),
 
           if( isRecording ) ... [
-            Positioned(
-              top: size.height * 0.08,
-              left: size.width * 0.375,
-              child: Container(
-                width: size.width * 0.25,
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(5),
+            Align(
+              alignment: (currentOrientation == DeviceOrientation.portraitUp) 
+                ? Alignment.topCenter 
+                : (currentOrientation == DeviceOrientation.landscapeLeft) 
+                  ? Alignment.centerLeft
+                  : Alignment.centerRight,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top : (currentOrientation == DeviceOrientation.portraitUp) ? size.height * 0.08 : 0,
+                  left: (currentOrientation == DeviceOrientation.landscapeLeft) ? size.height * 0.01 : 0,
+                  right: (currentOrientation == DeviceOrientation.landscapeRight) ? size.height * 0.01 : 0
                 ),
-                child: Center(
-                  child: Text(
-                    '00:00:${currentDuration.toString().padLeft(2, '0')}',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
+                child: RotatedBox(
+                  quarterTurns: (currentOrientation == DeviceOrientation.portraitUp) 
+                    ? 0 
+                    : (currentOrientation == DeviceOrientation.landscapeLeft) 
+                      ? 3  
+                      : 1,
+                  child: Container(
+                    width: size.width * 0.25,
+                    height: size.height * 0.03,
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '00:00:${currentDuration.toString().padLeft(2, '0')}',
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                    ),
                   ),
                 ),
               ),
