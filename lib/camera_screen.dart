@@ -143,8 +143,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                 }
                 : null,
                 child: CameraPreview(_controller!)
+                ),
               ),
-            ),
 
           if( isRecording ) ... [
             Positioned(
@@ -232,26 +232,26 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
             ),
           ],
 
-          if( isRecording )...[
-            Positioned(
-              bottom: size.height * 0.13,
-              left: size.width * 0.1,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 40),
-                child: CenteredSlider(
-                  min: _minZoom,
-                  max: _maxZoom,
-                  value: _currentZoom,
-                  onChanged: _setZoom,
-                  // onChanged: (value) {
-                  //   setState(() { _currentZoom = value; });
-                  //   _controller?.setZoomLevel(_currentZoom);
-                  // },
-                ),
-              ),
-            ),
+          // if( isRecording )...[
+          //   Positioned(
+          //     bottom: size.height * 0.13,
+          //     left: size.width * 0.1,
+          //     child: Padding(
+          //       padding: const EdgeInsets.only(bottom: 40),
+          //       child: CenteredSlider(
+          //         min: _minZoom,
+          //         max: _maxZoom,
+          //         value: _currentZoom,
+          //         onChanged: _setZoom,
+          //         // onChanged: (value) {
+          //         //   setState(() { _currentZoom = value; });
+          //         //   _controller?.setZoomLevel(_currentZoom);
+          //         // },
+          //       ),
+          //     ),
+          //   ),
 
-          ]
+          // ]
 
           
         ],

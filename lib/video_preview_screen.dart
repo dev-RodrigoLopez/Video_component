@@ -81,7 +81,7 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
                   icon: Icon(
                     Icons.cancel_outlined,
                     size: size.width * 0.15,
-                    color: Colors.white,
+                    color: Colors.red,
                   )
                 ),
 
@@ -115,7 +115,7 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
                   icon: Icon(
                     Icons.check_circle_outline_outlined,
                     size: size.width * 0.15,
-                    color: Colors.white,
+                    color: Colors.green,
                     weight: 1,
                   )
                 ),

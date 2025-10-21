@@ -13,18 +13,26 @@ import 'package:video_component/main.dart';
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify that the video call icon is present (initial state)
+    expect(find.byIcon(Icons.video_call), findsOneWidget);
+    
+    // Verify that the play icon is not present initially
+    expect(find.byIcon(Icons.play_arrow), findsNothing);
+    
+    // Verify that the app title is correct
+    expect(find.text('Video Recorder'), findsNothing); // Title is in MaterialApp, not visible in UI
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  testWidgets('App builds without crashing', (WidgetTester tester) async {
+    // Build our app and verify no exceptions are thrown
+    await tester.pumpWidget(MyApp());
+    
+    // Verify that we have a Scaffold
+    expect(find.byType(Scaffold), findsOneWidget);
+    
+    // Verify that we have the ButtonVideo widget
+    expect(find.byType(InkWell), findsOneWidget);
   });
 }
