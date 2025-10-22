@@ -20,6 +20,7 @@ class _FullscreenVideoScreenState extends State<FullscreenVideoScreen> {
   bool _isPlaying = false;
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = Duration.zero;
+  bool _isJumping = false;
 
   @override
   void initState() {
@@ -47,7 +48,9 @@ class _FullscreenVideoScreenState extends State<FullscreenVideoScreen> {
     if (mounted) {
       setState(() {
         _currentPosition = _controller.value.position;
-        _isPlaying = _controller.value.isPlaying;
+        if (!_isJumping) {
+          _isPlaying = _controller.value.isPlaying;
+        }
       });
     }
   }
@@ -75,26 +78,66 @@ class _FullscreenVideoScreenState extends State<FullscreenVideoScreen> {
     });
   }
 
-  void _seekBack() {//Regresar
+  void _seekBackward() {
     final currentPosition = _controller.value.position;
     final newPosition = currentPosition - const Duration(seconds: 5);
     
+    setState(() {
+      _isJumping = true;
+    });
+    
     if (newPosition < Duration.zero) {
-      _controller.seekTo(Duration.zero);
+      _controller.seekTo(Duration.zero).then((_) {
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            setState(() {
+              _isJumping = false;
+            });
+          }
+        });
+      });
     } else {
-      _controller.seekTo(newPosition);
+      _controller.seekTo(newPosition).then((_) {
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            setState(() {
+              _isJumping = false;
+            });
+          }
+        });
+      });
     }
   }
 
-  void _seekForward() {//Adelantar
+  void _seekForward() {
     final currentPosition = _controller.value.position;
     final newPosition = currentPosition + const Duration(seconds: 5);
     final duration = _controller.value.duration;
     
+    setState(() {
+      _isJumping = true;
+    });
+    
     if (newPosition > duration) {
-      _controller.seekTo(duration);
+      _controller.seekTo(duration).then((_) {
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            setState(() {
+              _isJumping = false;
+            });
+          }
+        });
+      });
     } else {
-      _controller.seekTo(newPosition);
+      _controller.seekTo(newPosition).then((_) {
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            setState(() {
+              _isJumping = false;
+            });
+          }
+        });
+      });
     }
   }
 
@@ -103,7 +146,20 @@ class _FullscreenVideoScreenState extends State<FullscreenVideoScreen> {
     final newPosition = Duration(
       milliseconds: (duration.inMilliseconds * value).round(),
     );
-    _controller.seekTo(newPosition);
+    
+    setState(() {
+      _isJumping = true;
+    });
+    
+    _controller.seekTo(newPosition).then((_) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          setState(() {
+            _isJumping = false;
+          });
+        }
+      });
+    });
   }
 
   String _formatDuration(Duration duration) {
@@ -231,9 +287,9 @@ class _FullscreenVideoScreenState extends State<FullscreenVideoScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      // Retroceder 5 segundos
+                      
                       GestureDetector(
-                        onTap: _seekBack,
+                        onTap: _seekBackward,
                         child: Container(
                           width: size.width * 0.12,
                           height: size.width * 0.12,
@@ -249,7 +305,6 @@ class _FullscreenVideoScreenState extends State<FullscreenVideoScreen> {
                         ),
                       ),
                       
-                      // Botón play/pause
                       GestureDetector(
                         onTap: _buttonPlayPause,
                         child: Container(
@@ -267,7 +322,6 @@ class _FullscreenVideoScreenState extends State<FullscreenVideoScreen> {
                         ),
                       ),
                       
-                      // Botón adelantar 5 segundos
                       GestureDetector(
                         onTap: _seekForward,
                         child: Container(
