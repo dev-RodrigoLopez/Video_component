@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:video_component/camera_screen.dart';
+import 'package:video_component/fullscreen_video_screen.dart';
 import 'package:video_player/video_player.dart';
 
 
@@ -70,7 +71,17 @@ class ButtonVideo extends StatelessWidget {
       width: size.width * 0.6,
 
       child: ( showPreview )  
-        ? MiniPreviewVideo(videoPath: path) 
+        ? GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FullscreenVideoScreen(videoPath: path),
+                ),
+              );
+            },
+            child: MiniPreviewVideo(videoPath: path),
+          )
         : InkWell(
           onTap: onTap,
           child: Ink(             // height: size.height * 0.2,
@@ -95,12 +106,12 @@ class ButtonVideo extends StatelessWidget {
 }
 
 class MiniPreviewVideo extends StatefulWidget {
-  MiniPreviewVideo({
+  const MiniPreviewVideo({
     required this.videoPath,
     super.key
   });
 
-  String videoPath;
+  final String videoPath;
   @override
   State<MiniPreviewVideo> createState() => _MiniPreviewVideoState();
 }
